@@ -6,13 +6,13 @@ from apps.tasks.models import Task
 from apps.tasks.validators import validate_date
 
 def can_edit_task(task, user):
+    if task.start_date < timezone.now():
+        return False
+
     if user.is_superuser:
         return True
 
-    if task.assigned_to != user:
-        return False
-
-    return task.start_date > timezone.now()
+    return task.assigned_to == user
 
 def can_delete_task(task, user):
     if user.is_superuser:
