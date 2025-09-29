@@ -28,6 +28,12 @@ class Task(models.Model):
         related_name='assigned_tasks',
         verbose_name='Исполнитель'
     )
+    related_tasks = models.ManyToManyField(
+        'self',
+        symmetrical=True,
+        blank=True,
+        verbose_name='Связанные задачи'
+    )
 
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Последнее обновление')
 
