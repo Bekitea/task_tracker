@@ -5,28 +5,25 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied, ValidationError
 
 from apps.tasks.models import Task
-from apps.tasks.serializers import TaskSerializer
+from apps.tasks.serializers import TaskWithRelatedSerializer, SimpleTaskSerializer
 from apps.tasks.services import get_tasks_for_user, create_task, update_task, delete_task, add_related_task, \
-    remove_related_task
+    remove_related_task, get_task
 
 
 class TaskViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return get_tasks_for_user(self.request.user)
-
     def list(self, request):
-        queryset = self.get_queryset()
-        serializer = TaskSerializer(queryset, many=True)
+        queryset = get_tasks_for_user(request.user)
+        serializer = SimpleTaskSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):
-        serializer = TaskSerializer(data=request.data)
+        serializer = TaskWithRelatedSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 task = create_task(serializer.validated_data, request.user)
-                response_serializer = TaskSerializer(task)
+                response_serializer = TaskWithRelatedSerializer(task)
                 return Response(response_serializer.data, status=status.HTTP_201_CREATED)
             except (PermissionDenied, ValidationError) as e:
                 return Response(
@@ -37,19 +34,24 @@ class TaskViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         try:
-            task = self.get_queryset().get(pk=pk)
+            task = get_task(request.user, pk)
         except Task.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        except PermissionDenied as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        serializer = TaskSerializer(task)
+        serializer = TaskWithRelatedSerializer(task)
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = TaskSerializer(data=request.data)
+        serializer = TaskWithRelatedSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 task = update_task(pk, serializer.validated_data, request.user)
-                response_serializer = TaskSerializer(task)
+                response_serializer = TaskWithRelatedSerializer(task)
                 return Response(response_serializer.data)
             except (PermissionDenied, ValidationError) as e:
                 return Response(
@@ -60,15 +62,20 @@ class TaskViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         try:
-            task = self.get_queryset().get(pk=pk)
+            task = get_task(request.user, pk)
         except Task.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        except PermissionDenied as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        serializer = TaskSerializer(task, data=request.data, partial=True)
+        serializer = TaskWithRelatedSerializer(task, data=request.data, partial=True)
         if serializer.is_valid():
             try:
                 updated_task = update_task(pk, serializer.validated_data, request.user)
-                response_serializer = TaskSerializer(updated_task)
+                response_serializer = TaskWithRelatedSerializer(updated_task)
                 return Response(response_serializer.data)
             except (PermissionDenied, ValidationError) as e:
                 return Response(
@@ -98,7 +105,7 @@ class TaskViewSet(viewsets.ViewSet):
 
         try:
             task = add_related_task(pk, related_task_id, request.user)
-            serializer = TaskSerializer(task)
+            serializer = TaskWithRelatedSerializer(task)
             return Response(serializer.data)
         except (PermissionDenied, ValidationError) as e:
             return Response(
@@ -117,7 +124,7 @@ class TaskViewSet(viewsets.ViewSet):
 
         try:
             task = remove_related_task(pk, related_task_id, request.user)
-            serializer = TaskSerializer(task)
+            serializer = TaskWithRelatedSerializer(task)
             return Response(serializer.data)
         except (PermissionDenied, ValidationError) as e:
             return Response(
