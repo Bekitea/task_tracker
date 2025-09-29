@@ -2,6 +2,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from apps.tasks.validators import validate_date
+from task_tracker import settings
 
 
 class Task(models.Model):
@@ -19,6 +20,21 @@ class Task(models.Model):
     description = models.TextField(blank=True, verbose_name='Описание')
     estimated_hours = models.FloatField(validators=[MinValueValidator(0.01)], verbose_name='Расчетное время')
     start_date = models.DateTimeField(validators=[validate_date], verbose_name='Дата запуска')
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_tasks',
+        verbose_name='Исполнитель'
+    )
+
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Последнее обновление')
 
     def __str__(self):
-        return self.topic
+        return f"{self.topic}"
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = 'Задача'
+        verbose_name_plural = 'Задачи'
