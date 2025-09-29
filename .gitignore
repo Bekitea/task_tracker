@@ -22,3 +22,5 @@
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/inspectionProfiles/Project_Default.xml
 /db.sqlite3
+/.idea/ritg.iml
+/.idea/dictionaries/project.xml
