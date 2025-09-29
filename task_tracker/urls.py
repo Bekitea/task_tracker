@@ -21,17 +21,11 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
-from rest_framework import routers
-
-from apps.tasks.views import TaskViewSet
-
-router = routers.DefaultRouter()
-router.register('tasks', TaskViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),
-    path('api/', include('apps.users.urls', namespace='users')),
+    path('auth/', include('apps.users.urls', namespace='users')),
+    path('', include('apps.tasks.urls', namespace='tasks')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
