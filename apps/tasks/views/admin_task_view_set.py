@@ -1,9 +1,9 @@
 from django.core.exceptions import PermissionDenied, ValidationError
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.permissions import IsAdmin
 from apps.tasks.filters import AdminTaskFilter
 from apps.tasks.models import Task
 from apps.tasks.serializers import TaskWithUserAndRelatedSerializer, TaskWithUserSerializer
@@ -11,7 +11,7 @@ from apps.tasks.services import create_task, update_task, delete_task, add_relat
 
 
 class AdminTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdmin]
     queryset = Task.objects.select_related('assigned_to').prefetch_related('related_tasks')
     serializer_class = TaskWithUserAndRelatedSerializer
     filterset_class = AdminTaskFilter

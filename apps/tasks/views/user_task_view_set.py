@@ -1,9 +1,9 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied, ValidationError
 
+from apps.core.permissions import IsTaskOwner
 from apps.tasks.filters import UserTaskFilter
 from apps.tasks.models import Task
 from apps.tasks.serializers import TaskWithRelatedSerializer, SimpleTaskSerializer
@@ -11,7 +11,7 @@ from apps.tasks.services import create_task, update_task, delete_task, add_relat
 
 
 class UserTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsTaskOwner]
     queryset = Task.objects.select_related('assigned_to').prefetch_related('related_tasks')
     serializer_class = TaskWithRelatedSerializer
     filterset_class = UserTaskFilter

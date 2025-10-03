@@ -9,18 +9,6 @@ def can_edit_task(task, user):
     if task.start_date < timezone.now():
         return False
 
-    if user.is_superuser:
-        return True
-
-    return task.assigned_to == user
-
-def can_delete_task(task, user):
-    if user.is_superuser:
-        return True
-
-    if task.assigned_to != user:
-        return False
-
     return True
 
 def create_task(task_data, user):
@@ -69,9 +57,6 @@ def delete_task(task_id, user):
         task = Task.objects.get(id=task_id)
     except Task.DoesNotExist:
         raise ValidationError("Задача не найдена")
-
-    if not can_delete_task(task, user):
-        raise PermissionDenied("Вы не можете удалить эту задачу")
 
     task.delete()
 

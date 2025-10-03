@@ -1,5 +1,6 @@
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.exceptions import ValidationError
@@ -9,6 +10,8 @@ from apps.users.services import register_user
 
 
 class RegistrationView(APIView):
+    permission_classes = (AllowAny,)
+
     @extend_schema(
         request=RegistrationSerializer,
         responses={
