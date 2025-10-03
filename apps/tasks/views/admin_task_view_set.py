@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.tasks.filters import AdminTaskFilter
 from apps.tasks.models import Task
 from apps.tasks.serializers import TaskWithUserAndRelatedSerializer, TaskWithUserSerializer
 from apps.tasks.services import create_task, update_task, delete_task, add_related_task, remove_related_task
@@ -13,6 +14,7 @@ class AdminTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Re
     permission_classes = [IsAuthenticated]
     queryset = Task.objects.select_related('assigned_to').prefetch_related('related_tasks')
     serializer_class = TaskWithUserAndRelatedSerializer
+    filterset_class = AdminTaskFilter
 
     def get_queryset(self):
         tasks = Task.objects.select_related('assigned_to')
