@@ -1,2 +1,4 @@
 from .simple_task_serializer import SimpleTaskSerializer
 from .task_with_related_serializer import TaskWithRelatedSerializer
+from .task_with_user_serializer import TaskWithUserSerializer
+from .task_with_user_and_related_serializer import TaskWithUserAndRelatedSerializer

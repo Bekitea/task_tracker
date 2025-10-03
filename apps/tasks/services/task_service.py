@@ -23,18 +23,6 @@ def can_delete_task(task, user):
 
     return True
 
-def get_tasks_for_user(user):
-    tasks = Task.objects.select_related('assigned_to')
-    if user.is_superuser:
-        return tasks
-    return tasks.filter(assigned_to=user)
-
-def get_task(user, task_id):
-    task = Task.objects.select_related('assigned_to').prefetch_related('related_tasks').get(id=task_id)
-    if not user.is_superuser and task.assigned_to != user:
-        raise PermissionDenied("Вы не имеете прав видеть эту задачу")
-    return task
-
 def create_task(task_data, user):
     validate_date(task_data['start_date'])
 
