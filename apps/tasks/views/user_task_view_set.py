@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiExample, extend_schema
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -61,6 +63,54 @@ class UserTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Ret
         delete_task(pk, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        description="Добавить связанную задачу к текущей задаче",
+        parameters=[
+            OpenApiParameter(
+                name='related_task_id',
+                type=OpenApiTypes.INT,
+                location='query',
+                description='ID связанной задачи для добавления',
+                required=True
+            )
+        ],
+        responses={
+            200: TaskWithRelatedSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                'Example request',
+                value={},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Example response',
+                value={
+                    'id': 1,
+                    'topic': 'Основная задача',
+                    'difficulty': 'medium',
+                    'description': 'Описание задачи',
+                    'estimated_hours': 5.0,
+                    'start_date': '2024-01-01T10:00:00Z',
+                    'updated_at': '2024-01-01T09:00:00Z',
+                    'related_tasks': [1, 2, 3],
+                    'related_tasks_info': [
+                        {
+                            'id': 2,
+                            'topic': 'Связанная задача 1',
+                            'difficulty': 'easy'
+                        },
+                        {
+                            'id': 3,
+                            'topic': 'Связанная задача 2',
+                            'difficulty': 'hard'
+                        }
+                    ]
+                },
+                response_only=True
+            )
+        ]
+    )
     @action(detail=True, methods=['post'])
     def add_related_task(self, request, pk=None, related_task_id=None):
         if not related_task_id:
@@ -70,6 +120,44 @@ class UserTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Ret
         serializer = self.get_serializer(task)
         return Response(serializer.data)
 
+    @extend_schema(
+        description="Удалить связанную задачу из текущей задачи",
+        parameters=[
+            OpenApiParameter(
+                name='related_task_id',
+                type=OpenApiTypes.INT,
+                location='query',
+                description='ID связанной задачи для удаления',
+                required=True
+            )
+        ],
+        responses={
+            200: TaskWithRelatedSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                'Example response',
+                value={
+                    'id': 1,
+                    'topic': 'Основная задача',
+                    'difficulty': 'medium',
+                    'description': 'Описание задачи',
+                    'estimated_hours': 5.0,
+                    'start_date': '2024-01-01T10:00:00Z',
+                    'updated_at': '2024-01-01T09:00:00Z',
+                    'related_tasks': [1, 2],
+                    'related_tasks_info': [
+                        {
+                            'id': 2,
+                            'topic': 'Связанная задача 1',
+                            'difficulty': 'easy'
+                        }
+                    ]
+                },
+                response_only=True
+            )
+        ]
+    )
     @action(detail=True, methods=['post'])
     def remove_related_task(self, request, pk=None, related_task_id=None):
         if not related_task_id:
